@@ -7,6 +7,7 @@ Run from repository root:
 
 from __future__ import annotations
 
+import html
 from typing import Literal
 
 import pandas as pd
@@ -101,11 +102,17 @@ def _inject_styles() -> None:
     st.markdown(
         """
         <style>
-        div.block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
-        h1 { letter-spacing: -0.02em; font-weight: 600; }
-        .policy-purpose { font-size: 1.1rem; line-height: 1.55; color: inherit; margin-bottom: 0.5rem; }
-        .data-note { font-size: 0.9rem; opacity: 0.9; margin-top: 0.25rem; }
+        div.block-container { padding-top: 1rem; padding-bottom: 2rem; }
+        h1 { letter-spacing: -0.02em; font-weight: 600; margin-bottom: 0.35rem; }
+        .policy-purpose { font-size: 1rem; line-height: 1.45; color: inherit; margin-bottom: 0.35rem; }
         .designer-attribution { font-size: 0.85rem; opacity: 0.85; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(128,128,128,0.35); }
+        .focus-hero { max-width: 100%; }
+        .focus-score-wrap { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.25rem 2rem; margin: 0.35rem 0 0.75rem 0; }
+        .focus-score-label { display: block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.72; margin-bottom: 0.2rem; }
+        .focus-score-num { font-size: 2.65rem; font-weight: 700; color: #0d9488; line-height: 1; letter-spacing: -0.03em; }
+        .focus-score-avg { font-size: 1.05rem; line-height: 1.35; color: #6b7280; padding-bottom: 0.2rem; }
+        .focus-score-avg strong { color: #374151; font-weight: 600; }
+        .focus-insight { font-size: 0.95rem; line-height: 1.5; opacity: 0.95; margin-top: 0.5rem; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -121,26 +128,19 @@ def main() -> None:
     )
     _inject_styles()
 
-    # --- Header: title, purpose, public-data note ---
+    # --- Header: title + compact purpose (keeps focus state above the fold) ---
     st.title("Healthcare Access Risk Dashboard")
     st.markdown(
         '<p class="policy-purpose">'
-        "This dashboard helps leaders see which states may face stronger pressure on "
-        "healthcare access—so you can prioritize outreach, coverage, and rural services. "
-        "Scores combine income, insurance gaps, cost pressure, and rural share into one "
-        "easy-to-read picture for each state."
+        "Spot states under pressure on healthcare access, then act on coverage, subsidies, and rural services. "
+        "Each score blends income, insurance gaps, cost signals, and rural share."
         "</p>",
         unsafe_allow_html=True,
     )
-    st.markdown(
-        '<p class="data-note">This tool uses publicly available U.S. data for policy analysis.</p>',
-        unsafe_allow_html=True,
-    )
-    st.divider()
 
     with st.sidebar:
         st.markdown("### How to use")
-        st.caption("Pick a data source, then choose a state—it appears first in the main story, above the tables and charts.")
+        st.caption("Pick data source and state—the highlighted state is the main headline on the left.")
 
         data_mode = st.radio(
             "Data source",
@@ -175,10 +175,9 @@ def main() -> None:
             key="focus_state",
         )
 
-        st.divider()
-        st.markdown("**Public data link (live mode)**")
-        st.caption("Used when “Use Real Data” is on and the connection succeeds.")
-        st.code(DATASET_URL, language="text")
+        with st.expander("Public data link (live mode)"):
+            st.caption("Used when “Use Real Data” is on and the connection succeeds.")
+            st.code(DATASET_URL, language="text")
 
     # Real-data failure → sample data + warning (not shown when user chose sample data on purpose)
     if use_real and load_warning:
@@ -197,7 +196,10 @@ def main() -> None:
         if (use_real and source_tag == "real")
         else "Sample data"
     )
-    st.caption(f"**States in this view:** {row_count} · **Source:** {src_label}")
+    st.caption(
+        f"This tool uses publicly available U.S. data for policy analysis · "
+        f"**{row_count}** states · **{src_label}**"
+    )
 
     st.divider()
 
@@ -230,53 +232,11 @@ def main() -> None:
     except Exception:
         display_df["policy_insight"] = "A short explanation could not be built for this row."
 
-    # --- Key indicators ---
-    st.markdown("### At a glance")
-    st.markdown("")  # spacing
     try:
         high_ct = int((pred_series == "High").sum())
         mean_risk = float(result.risk_score.mean())
-        med_income = float(df["median_income"].median())
     except Exception:
-        high_ct, mean_risk, med_income = 0, 0.0, 0.0
-
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.metric(
-            label="Average access risk score",
-            value=f"{mean_risk:.1f}",
-            help="From 0 (lower pressure) to 100 (higher pressure) within this group of states.",
-        )
-    with c2:
-        st.metric(
-            label="States flagged high priority",
-            value=high_ct,
-            help="Count of states in the “high” band on this run.",
-        )
-    with c3:
-        st.metric(
-            label="How often the model matches the score bands",
-            value=f"{result.accuracy:.0%}",
-            help="Share of held-back states where the model agrees with the high / medium / low bands from the score.",
-        )
-    with c4:
-        st.metric(
-            label="Data in use",
-            value="Live public file" if (use_real and source_tag == "real") else "Sample",
-        )
-
-    st.markdown("")
-    st.markdown("### Policy brief")
-    try:
-        st.write(policy_brief(display_df, pred_series))
-    except Exception:
-        st.write("A full brief could not be generated for this panel.")
-
-    st.divider()
-
-    # --- Focus state first (policy layer before raw tables and charts) ---
-    st.markdown("### Focus state")
-    st.caption("Pick a state in the sidebar—this is the headline read for that state before you scroll to the full data.")
+        high_ct, mean_risk = 0, 0.0
 
     try:
         matches = display_df.loc[display_df["state"].astype(str) == str(selected_state)]
@@ -290,15 +250,68 @@ def main() -> None:
         row = display_df.iloc[0]
         focus_name = str(row.get("state", "Unknown"))
 
-    fc1, fc2 = st.columns(2)
-    with fc1:
-        st.markdown(f"**{focus_name}** — **{row['predicted_risk_tier']}** priority")
-        st.metric("Access risk score", f"{float(row['risk_score']):.1f}")
+    state_score = float(row["risk_score"])
+    tier = str(row["predicted_risk_tier"])
+
+    # --- Hero: focus state (left, key message) + compact snapshot (right) ---
+    hero_left, hero_right = st.columns([1.45, 0.92], gap="large")
+
+    with hero_left:
+        st.markdown("### Focus state")
+        _fn = html.escape(focus_name)
+        _tier = html.escape(tier)
+        st.markdown(
+            f'<p class="focus-hero"><span style="font-size:1.35rem;font-weight:600;">{_fn}</span>'
+            f' &nbsp;·&nbsp; <span style="font-weight:600;">{_tier}</span> priority</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f'<div class="focus-score-wrap">'
+            f'<div><span class="focus-score-label">Access risk score</span>'
+            f'<span class="focus-score-num">{state_score:.1f}</span></div>'
+            f'<div class="focus-score-avg">Average for all states in this view: '
+            f"<strong>{mean_risk:.1f}</strong></div>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
         st.markdown("**Suggested direction**")
         st.write(str(row["recommendation"]))
-    with fc2:
         st.markdown("**Why this priority level**")
-        st.write(str(row.get("policy_insight", "")))
+        st.markdown(
+            f'<p class="focus-insight">{html.escape(str(row.get("policy_insight", "")))}</p>',
+            unsafe_allow_html=True,
+        )
+
+    with hero_right:
+        st.markdown("### Panel snapshot")
+        st.caption("Rest of the country at a glance—details below.")
+        r1, r2 = st.columns(2)
+        with r1:
+            st.metric(
+                label="High-priority states",
+                value=high_ct,
+                help="Number of states in the high band on this run.",
+            )
+        with r2:
+            st.metric(
+                label="Model match rate",
+                value=f"{result.accuracy:.0%}",
+                help="How often the checker agrees with the high / medium / low bands on held-aside states.",
+            )
+        r3, r4 = st.columns(2)
+        with r3:
+            st.metric(label="States in view", value=int(row_count))
+        with r4:
+            st.metric(
+                label="Data",
+                value="Live file" if (use_real and source_tag == "real") else "Sample",
+            )
+
+    with st.expander("Policy brief (full narrative)", expanded=False):
+        try:
+            st.write(policy_brief(display_df, pred_series))
+        except Exception:
+            st.write("A full brief could not be generated for this panel.")
 
     st.divider()
 

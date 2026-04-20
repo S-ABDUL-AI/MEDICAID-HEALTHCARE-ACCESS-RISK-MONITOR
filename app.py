@@ -140,7 +140,7 @@ def main() -> None:
 
     with st.sidebar:
         st.markdown("### How to use")
-        st.caption("Pick a data source, then choose a state to read the short policy notes.")
+        st.caption("Pick a data source, then choose a state—it appears first in the main story, above the tables and charts.")
 
         data_mode = st.radio(
             "Data source",
@@ -274,6 +274,34 @@ def main() -> None:
 
     st.divider()
 
+    # --- Focus state first (policy layer before raw tables and charts) ---
+    st.markdown("### Focus state")
+    st.caption("Pick a state in the sidebar—this is the headline read for that state before you scroll to the full data.")
+
+    try:
+        matches = display_df.loc[display_df["state"].astype(str) == str(selected_state)]
+        if len(matches) == 0:
+            row = display_df.iloc[0]
+            focus_name = str(row["state"])
+        else:
+            row = matches.iloc[0]
+            focus_name = str(selected_state)
+    except Exception:
+        row = display_df.iloc[0]
+        focus_name = str(row.get("state", "Unknown"))
+
+    fc1, fc2 = st.columns(2)
+    with fc1:
+        st.markdown(f"**{focus_name}** — **{row['predicted_risk_tier']}** priority")
+        st.metric("Access risk score", f"{float(row['risk_score']):.1f}")
+        st.markdown("**Suggested direction**")
+        st.write(str(row["recommendation"]))
+    with fc2:
+        st.markdown("**Why this priority level**")
+        st.write(str(row.get("policy_insight", "")))
+
+    st.divider()
+
     left_intro, right_intro = st.columns(2)
     with left_intro:
         st.markdown("### Data preview")
@@ -358,33 +386,6 @@ def main() -> None:
             st.plotly_chart(fig_fi, use_container_width=True)
         except Exception:
             st.warning("The influence chart could not be drawn for this data.")
-
-    st.divider()
-
-    st.markdown("### Focus state")
-    st.caption("Read the recommendation and plain-language “why” for one state.")
-
-    try:
-        matches = display_df.loc[display_df["state"].astype(str) == str(selected_state)]
-        if len(matches) == 0:
-            row = display_df.iloc[0]
-            focus_name = str(row["state"])
-        else:
-            row = matches.iloc[0]
-            focus_name = str(selected_state)
-    except Exception:
-        row = display_df.iloc[0]
-        focus_name = str(row.get("state", "Unknown"))
-
-    fc1, fc2 = st.columns(2)
-    with fc1:
-        st.markdown(f"**{focus_name}** — **{row['predicted_risk_tier']}** priority")
-        st.metric("Access risk score", f"{float(row['risk_score']):.1f}")
-        st.markdown("**Suggested direction**")
-        st.write(str(row["recommendation"]))
-    with fc2:
-        st.markdown("**Why this priority level**")
-        st.write(str(row.get("policy_insight", "")))
 
     st.markdown(
         '<p class="designer-attribution">Designed by: Sherriff Abdul-Hamid</p>',

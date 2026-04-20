@@ -31,29 +31,29 @@ def policy_insight_row(row: pd.Series) -> str:
     rural = float(row["rural_population"])
 
     if unins >= float(row.get("_panel_median_uninsured", unins)):
-        parts.append("uninsured-rate pressure is at or above the national sample median")
+        parts.append("the share without insurance is higher than for the typical state in this view")
     else:
-        parts.append("uninsured-rate pressure is below the national sample median")
+        parts.append("the share without insurance is lower than for the typical state in this view")
 
     if cost >= float(row.get("_panel_median_cost", cost)):
-        parts.append("cost-index signals are relatively strong")
+        parts.append("relative care costs look stronger than for the typical state in this view")
     else:
-        parts.append("cost-index signals are relatively moderate")
+        parts.append("relative care costs look moderate compared with the typical state in this view")
 
     if med_income <= float(row.get("_panel_median_income", med_income)):
-        parts.append("income capacity in this row is on the lower side of the panel")
+        parts.append("typical income in this state sits below the middle of this group")
     else:
-        parts.append("income capacity in this row is on the higher side of the panel")
+        parts.append("typical income in this state sits above the middle of this group")
 
     if rural >= float(row.get("_panel_median_rural", rural)):
-        parts.append("rural share is elevated in this panel, which can strain facility access")
+        parts.append("the rural share is on the high side, which can make clinics and transport harder")
     else:
-        parts.append("rural share is not the dominant driver relative to peers")
+        parts.append("the rural share is not the strongest factor compared with other states here")
 
     return (
-        "In this modeled snapshot, "
+        "Taken together for this state: "
         + "; ".join(parts[:3])
-        + ", which together shape the composite access-risk score."
+        + ". These pieces feed into the overall access risk score you see above."
     )
 
 
@@ -80,18 +80,18 @@ def policy_brief(df: pd.DataFrame, predictions: pd.Series) -> str:
     mean_risk = float(risk.mean())
 
     s1 = (
-        f"This dashboard summarizes modeled healthcare access risk for {n} jurisdictions, "
-        f"with about {high_share:.0%} classified as high risk, {med_share:.0%} medium, and {low_share:.0%} low under the current scoring rules."
+        f"In this view, {n} states are scored for access pressure. "
+        f"About {high_share:.0%} land in the high band, {med_share:.0%} in medium, and {low_share:.0%} in low."
     )
     s2 = (
-        f"The mean composite risk score is {mean_risk:.1f} on a 0–100 scale, with the highest modeled burden appearing in {top} in this run."
+        f"The average score is {mean_risk:.1f} on a 0–100 scale (higher means more pressure). "
+        f"{top} shows the highest score in this run."
     )
     s3 = (
-        "Policymakers should treat high-risk clusters as candidates for coverage expansions, "
-        "subsidy calibration, and targeted rural-capacity investments, while maintaining surveillance where risk is already low."
+        "States in the high band are good candidates for stronger coverage help, subsidies people can actually use, "
+        "and extra support for rural clinics and transport."
     )
     s4 = (
-        "Figures are indicators derived for exploration; confirm with state-specific enrollment, "
-        "provider, and financing data before committing major funding decisions."
+        "Treat these results as a starting view—pair them with local enrollment, hospital, and budget facts before large commitments."
     )
     return " ".join([s1, s2, s3, s4])

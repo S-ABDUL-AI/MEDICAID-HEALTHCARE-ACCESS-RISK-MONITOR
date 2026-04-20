@@ -17,6 +17,49 @@ import requests
 
 from config import DATASET_URL, FEATURE_COLUMNS, RANDOM_STATE
 
+REQUIRED_COLUMNS = ["state", *FEATURE_COLUMNS]
+
+
+def is_valid_panel(df: pd.DataFrame | None) -> bool:
+    """True if the frame has the columns and rows needed for modeling."""
+    if df is None or len(df) == 0:
+        return False
+    if not all(c in df.columns for c in REQUIRED_COLUMNS):
+        return False
+    numeric = df[FEATURE_COLUMNS].apply(pd.to_numeric, errors="coerce")
+    if numeric.isna().all().all():
+        return False
+    return True
+
+
+def minimal_fallback_panel() -> pd.DataFrame:
+    """
+    Last-resort tiny panel so the app can still render if every other load path fails.
+    Values are placeholders for continuity only.
+    """
+    return pd.DataFrame(
+        {
+            "state": ["Alabama", "California", "Illinois", "New York", "Texas"],
+            "median_income": [48_000.0, 72_000.0, 61_000.0, 68_000.0, 55_000.0],
+            "uninsured_rate": [12.0, 8.0, 9.0, 7.0, 14.0],
+            "healthcare_cost_index": [102.0, 118.0, 105.0, 115.0, 99.0],
+            "rural_population": [0.42, 0.12, 0.22, 0.15, 0.28],
+        }
+    )
+
+
+def ensure_usable_panel(df: pd.DataFrame | None) -> pd.DataFrame:
+    """Return a validated panel, falling back to synthetic then minimal data."""
+    if is_valid_panel(df):
+        return df  # type: ignore[return-value]
+    try:
+        syn = generate_synthetic_state_data()
+        if is_valid_panel(syn):
+            return syn
+    except Exception:
+        pass
+    return minimal_fallback_panel()
+
 
 def _normalize_series(s: pd.Series) -> pd.Series:
     """Min–max scale to [0, 1], handling constant series."""
@@ -168,6 +211,7 @@ def fetch_public_dataset() -> tuple[pd.DataFrame, Literal["real", "simulated"]]:
     Load the hosted CSV and return enriched healthcare-indicator rows.
 
     Returns (dataframe, source_tag) where source_tag is 'real' or 'simulated' on failure.
+    Wrapped in try/except so callers are never interrupted by network or parse errors.
     """
     try:
         resp = requests.get(DATASET_URL, timeout=20)
@@ -177,8 +221,14 @@ def fetch_public_dataset() -> tuple[pd.DataFrame, Literal["real", "simulated"]]:
         missing = [c for c in FEATURE_COLUMNS if c not in enriched.columns]
         if missing:
             raise ValueError(f"Missing expected columns after enrich: {missing}")
+        if not is_valid_panel(enriched):
+            raise ValueError("Enriched dataset failed validation.")
         return enriched, "real"
     except Exception:
-        return generate_synthetic_state_data(), "simulated"
+        try:
+            syn = generate_synthetic_state_data()
+            return ensure_usable_panel(syn), "simulated"
+        except Exception:
+            return minimal_fallback_panel(), "simulated"
 
 

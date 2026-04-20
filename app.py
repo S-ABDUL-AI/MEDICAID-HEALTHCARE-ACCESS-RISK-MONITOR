@@ -142,9 +142,9 @@ def _inject_styles() -> None:
     st.markdown(
         """
         <style>
-        div.block-container { padding-top: 1rem; padding-bottom: 2rem; }
-        h1 { letter-spacing: -0.02em; font-weight: 600; margin-bottom: 0.35rem; }
-        .policy-purpose { font-size: 1rem; line-height: 1.45; color: inherit; margin-bottom: 0.35rem; }
+        div.block-container { padding-top: 0.35rem; padding-bottom: 1.5rem; }
+        h1 { letter-spacing: -0.02em; font-weight: 600; margin-bottom: 0.15rem; }
+        .policy-purpose { font-size: 0.92rem; line-height: 1.35; color: inherit; margin-bottom: 0.15rem; }
         .designer-attribution { font-size: 0.85rem; opacity: 0.85; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(128,128,128,0.35); }
         .focus-hero { max-width: 100%; }
         .focus-score-wrap { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.25rem 2rem; margin: 0.35rem 0 0.75rem 0; }
@@ -252,8 +252,6 @@ def main() -> None:
         f"**{row_count}** states · **{src_label}**"
     )
 
-    st.divider()
-
     # --- Model run (guarded so bad rows never crash the app) ---
     try:
         result = train_risk_classifier(df)
@@ -336,16 +334,6 @@ def main() -> None:
             f"</div>",
             unsafe_allow_html=True,
         )
-        st.markdown("**Suggested direction**")
-        st.caption(
-            "General actions tied to this state’s **priority band** (high, medium, or low). "
-            "The same band can share the same direction even when details differ."
-        )
-        st.markdown(
-            f'<div class="priority-textbox" style="background:{tier_style["box_bg"]};'
-            f'color:{tier_style["box_text"]};">{html.escape(focus_recommendation)}</div>',
-            unsafe_allow_html=True,
-        )
         st.markdown("**Why this priority level**")
         st.caption(
             "State-specific: how this state compares to others in the data on insurance, costs, income, and rural share."
@@ -354,6 +342,16 @@ def main() -> None:
         st.markdown(
             f'<div class="priority-textbox" style="background:{tier_style["box_bg"]};'
             f'color:{tier_style["box_text"]};">{html.escape(_insight)}</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("**Suggested direction**")
+        st.caption(
+            "General actions tied to this state’s **priority band** (high, medium, or low). "
+            "The same band can share the same direction even when details differ."
+        )
+        st.markdown(
+            f'<div class="priority-textbox" style="background:{tier_style["box_bg"]};'
+            f'color:{tier_style["box_text"]};">{html.escape(focus_recommendation)}</div>',
             unsafe_allow_html=True,
         )
 

@@ -1,9 +1,6 @@
 # Medicaid & Healthcare Access Risk Monitor
 ### State-Level Coverage Prioritization for Policy Teams and Program Officers
 
-**Built by Sherriff Abdul-Hamid**  
-Sherriff Abdul-Hamid is a development economist and public-sector AI researcher applying cost-effectiveness analysis and causal inference to social protection and benefits delivery systems.
-
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chpghrwawmvddoquvmniwm.streamlit.app/)
 
 ---
@@ -148,20 +145,11 @@ reflects the author's approach to all products in this portfolio.
 
 ---
 
-## About the Author
+## Author
 
-**Sherriff Abdul-Hamid**Sherriff Abdul-Hamid is a development economist and public-sector AI researcher applying cost-effectiveness analysis and causal inference to social protection and benefits delivery systems.
-
-- Former Founder & CEO, Poverty 360 — 25,000+ beneficiaries served across West Africa
-- Partnered with Ghana's National Health Insurance Authority (NHIA) to enroll
-  1,250 vulnerable women and abuse survivors into national health coverage
-- Secured and managed multi-year institutional funding from USAID, UKAID, UNDP, and USADF across health, nutrition, and social protection programmes
-- **Obama Foundation Leaders Award** — Top 1.3% globally, 2023
-- **Mandela Washington Fellow** — Top 0.3%, U.S. Department of State, 2018
-- Harvard Business School · Senior Executive Program in General Management
-- Healthcare Analytics Essentials — Northeastern University, 2024
-
-**Connect:** [LinkedIn](https://www.linkedin.com/in/abdul-hamid-sherriff-08583354/) · [Portfolio](https://share.streamlit.io/user/s-abdul-ai)
+**Sherriff Abdul-Hamid**
+Data Scientist · Development Economist · Public-Sector AI Researcher
+[poverty360.org](https://poverty360.org) | [LinkedIn](https://www.linkedin.com/in/abdul-hamid-sherriff-08583354/) | [GitHub](https://github.com/S-ABDUL-AI)
 
 ---
 

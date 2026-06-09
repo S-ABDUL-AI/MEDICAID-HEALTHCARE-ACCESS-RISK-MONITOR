@@ -1,7 +1,7 @@
 # Medicaid & Healthcare Access Risk Monitor
 ### State-Level Coverage Prioritization for Policy Teams and Program Officers
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chpghrwawmvddoquvmniwm.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://medicaid-healthcare-access-risk-monitor-state-level-coverage-p.streamlit.app)
 
 ---
 
@@ -112,10 +112,7 @@ streamlit run app.py
 ## Deployment
 
 Deployed on Streamlit Community Cloud.  
-Live demo: [Medicaid & Healthcare Access Risk Monitor](https://chpghrwawmvddoquvmniwm.streamlit.app/)
-
-**Rename the URL slug** (recommended):  
-In Streamlit Cloud settings, change to: `medicaid-healthcare-access-risk-monitor`
+Live demo: [Medicaid & Healthcare Access Risk Monitor](https://medicaid-healthcare-access-risk-monitor-state-level-coverage-p.streamlit.app)
 
 ---
 
